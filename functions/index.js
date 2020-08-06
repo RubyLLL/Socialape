@@ -2,7 +2,7 @@ const functions = require('firebase-functions');
 const app = require('express')()
 
 const { getAllScreams, postScream } = require('./handlers/scream')
-const { userSignup, userLogin } = require('./handlers/user')
+const { userSignup, userLogin, uploadImage } = require('./handlers/user')
 const FBAuth = require('./utils/fbAuth')
 
 // srceam routes
@@ -14,6 +14,8 @@ app.post('/scream', FBAuth, postScream)
 app.post('/signup', userSignup)
 // Log in route
 app.post('/login', userLogin)
+
+app.post('/users/image',FBAuth, uploadImage)
 
 // https://baseurl.com/api/
 exports.api = functions.https.onRequest(app)
