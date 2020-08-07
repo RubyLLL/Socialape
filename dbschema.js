@@ -1,4 +1,15 @@
 let db = {
+    users: [
+        {
+            userId: '',
+            email: '',
+            handle: '',
+            imageUrl: '',
+            bio: '',
+            website: '',
+            location: ''
+        }
+    ],
     scream: [
         {
             userHandle: 'user',

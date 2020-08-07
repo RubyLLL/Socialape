@@ -23,7 +23,6 @@ module.exports = (req, res, next) => {
         .then(data => {
             // data() will extract data from the document
             req.user.handle = data.docs[0].data().handle
-            console.log(req.user)
             return next()
         })
         .catch(e => {

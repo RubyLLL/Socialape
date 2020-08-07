@@ -6,7 +6,8 @@ firebase.initializeApp(config)
 const { db, admin } = require('../utils/admin')
 const { 
     validateSignupData, 
-    validateLoginData
+    validateLoginData,
+    reduceUserDetails
  } = require('../utils/validator')
 
 exports.userSignup = (req, res) => {
@@ -90,6 +91,21 @@ exports.userLogin = (req, res) => {
     })
 }
 
+// Add user details
+exports.addUserDetails = (req, res) => {
+    let userDetails = reduceUserDetails(req.body)
+
+    db.collection('users').doc(`${req.user.uid}`).update({userDetails})
+    .then(() => {
+        return res.json({ message: 'Details added successfully' })
+    })
+    .catch(e => {
+        console.error(e)
+        return res.status(500).json({ error: e.code })
+    })
+}
+
+// Upload user image
 exports.uploadImage = (req, res) => {
 
     const BusBoy = require('busboy')
@@ -103,9 +119,10 @@ exports.uploadImage = (req, res) => {
     let imageToBeUploaded = {}
 
     busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-        console.log(fieldname)
-        console.log(filename)
-        console.log(mimetype)
+        if(mimetype !== 'image/jpeg' || mimetype !== 'image/png'){
+            return res.status(400).json({ error: 'Wrong file type submitted' })
+        }
+
         const imageExtension = filename.split('.')[filename.split('.').length - 1]
         imageFileName = `${Math.floor(Math.random() * 1000000000000)}.${imageExtension}`
         const filepath = path.join(os.tmpdir(), imageFileName)
@@ -128,7 +145,6 @@ exports.uploadImage = (req, res) => {
             }
           })
           .then(() => {
-            console.log(req.user)
             const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${imageFileName}?alt=media`;
             return db.collection('users').doc(`${req.user.uid}`).update({ imageUrl });
         })
