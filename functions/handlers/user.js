@@ -105,6 +105,33 @@ exports.addUserDetails = (req, res) => {
     })
 }
 
+// Get own user details
+exports.getAuthenticatedUser = (req, res) => {
+    let userData = {}
+
+    db
+    .collection('users')
+    .doc(`${req.user.uid}`)
+    .get()
+    .then(doc => {
+        if(doc.exists){
+            userData.credentials = doc.data()
+            return db.collection('likes').where('userHandle', '==', req.user.handle).get()
+        }
+    })
+    .then(data => {
+        userData.likes = []
+        data.forEach(doc => {
+            userData.likes.push(doc.data())
+        })
+        return res.json(userData)
+    })
+    .catch(e => {
+        console.error(e)
+        return res.status(500).json({ error: e.code })
+    })
+}
+
 // Upload user image
 exports.uploadImage = (req, res) => {
 
