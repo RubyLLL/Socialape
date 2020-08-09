@@ -1,6 +1,7 @@
 const functions = require('firebase-functions');
 const app = require('express')()
 
+const {db } = require('./utils/admin')
 const { 
     getAllScreams, 
     postScream,
@@ -44,3 +45,65 @@ app.get('/user', FBAuth, getAuthenticatedUser)
 
 // https://baseurl.com/api/
 exports.api = functions.https.onRequest(app)
+
+// database trigger
+exports.createNotificationOnLike = functions.firestore.document('likes/{id}')
+.onCreate((snapshot) => {
+    db.doc(`screams/${snapshot.data().screamId}`).get()
+    .then(doc => {
+        if(doc.exists) {
+            return db.doc(`notifications/${snapshot.id}`).add({
+                createdAt: new Date().toISOString(), 
+                recipient: doc.data().userHandle,
+                sender:snapshot.data().userHandle,
+                type: 'like',
+                read: false,
+                screamId: doc.id
+            })
+        }
+    })
+    .then(() => {
+        return
+    })
+    .catch(e => {
+        console.error(e)
+        return
+    }) 
+})
+
+exports.deleteNotificationOnLike = functions.firestore.document('likes/{id}')
+.onDelete((snapshot) => {
+    db.doc(`/notifications/${snapshot.id}`)
+    .delete()
+    .then(() => {
+        return
+    })
+    .catch(e => {
+        console.error(e)
+        return
+    })
+})
+
+exports.createNotificationOnComment = functions.firestore.document('comments/{id}')
+.onCreate((snapshot) => {
+    db.doc(`screams/${snapshot.data().screamId}`).get()
+    .then(doc => {
+        if(doc.exists) {
+            return db.doc(`notifications/${snapshot.id}`).add({
+                createdAt: new Date().toISOString(), 
+                recipient: doc.data().userHandle,
+                sender:snapshot.data().userHandle,
+                type: 'comment',
+                read: false,
+                screamId: doc.id
+            })
+        }
+    })
+    .then(() => {
+        return
+    })
+    .catch(e => {
+        console.error(e)
+        return
+    })
+})
