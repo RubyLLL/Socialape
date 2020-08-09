@@ -205,3 +205,26 @@ exports.unlikeScream = (req, res) => {
     })
 
 }
+
+exports.deleteScream = (req, res) => {
+    const screamDocument = db.doc(`screams/${req.params.screamId}`)
+
+    screamDocument.get()
+    .then(doc => {
+      if(!doc.exists)  {
+          return res.status(404).json({ error: 'Scream not found' })
+      } 
+      if(doc.data().userHandle !== req.user.handle) {
+          return res.status(403).json({ error: 'Unauthorized action' })
+      } else{
+          return screamDocument.delete()
+      }
+    })
+    .then(() => {
+        res.json({ message: 'Scream deleted successfully' })
+    })
+    .catch(e => {
+        console.error(e)
+        return res.status(500).json({ error: e.code })
+    })
+}

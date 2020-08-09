@@ -7,7 +7,8 @@ const {
     getScream,
     commentOnScream,
     likeScream,
-    unlikeScream
+    unlikeScream,
+    deleteScream
  } = require('./handlers/scream')
 const { 
     userSignup, 
@@ -27,7 +28,7 @@ app.get('/scream/:screamId', getScream)
 app.post('/scream/:screamId/comments', FBAuth, commentOnScream)
 app.get('/scream/:screamId/like',FBAuth, likeScream)
 app.get('/scream/:screamId/unlike', FBAuth, unlikeScream)
-// TODO: deleteScream
+app.delete('/scream/:screamId', FBAuth, deleteScream)
 
 
 // Sign up route
