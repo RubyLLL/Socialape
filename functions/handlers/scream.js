@@ -27,15 +27,20 @@ exports.postScream = (req, res) => {
 
     const newScream = {
         body: req.body.body,
-        userHandle: req.user.userHandle,
-        createdAt: new Date().toISOString()
+        userHandle: req.user.handle,
+        createdAt: new Date().toISOString(),
+        imageUrl: req.user.imageUrl,
+        likeCount: 0,
+        commentCount: 0
     };
 
     db
     .collection('screams')
     .add(newScream)
     .then((doc) => {
-        res.json({ message: `document ${doc.id} created successfully.`})
+        const resScream = newScream
+        resScream.screamId = doc.id
+        res.json(resScream)
     })
     .catch(err => {
         res.status(500).json({ error: 'something went wrong' })
@@ -89,6 +94,9 @@ exports.commentOnScream = (req, res) => {
         if(!doc.exists) {
             return req.status(404).json({ error: 'Scream not found' })
         }
+        return doc.ref.update({ commentCount: doc.data().commentCount + 1 })
+    })
+    .then(() => {
         return db.collection('comments').add(newComment)
     })
     .then(() => {
@@ -97,6 +105,103 @@ exports.commentOnScream = (req, res) => {
     .catch(e => {
         console.error(e)
         return res.status(500).json({ error: e.code })
+    })
+
+} 
+
+exports.likeScream = (req, res) => {
+    const likeDocument = 
+    db
+    .collection('likes')
+    .where('userHandle', '==', req.user.handle)
+    .where('screamId', '==', req.params.screamId)
+    .limit(1)
+
+    const screamDocument = db.collection('screams').doc(req.params.screamId)
+
+    let screamData = {}
+
+    screamDocument.get()
+    // get the scream the user wants to like
+    .then(doc => {
+        if(doc.exists) {
+            screamData = doc.data()
+            screamData.screamId = doc.id
+
+            return likeDocument.get()
+        } else return res.status(404).json({ error: 'Scream not found' })
+    })
+    // a query snapshot
+    .then(data => {
+        // this scream has not been liked by this user
+        if(data.empty) {
+            return db.collection('likes').add({
+                // add this scream to likes
+                screamId: req.params.screamId,
+                userHandle: req.user.handle
+            })
+            .then(() => {
+                // increase likeCount of this scream
+                screamData.likeCount++
+                return screamDocument.update({ likeCount: screamData.likeCount })
+            })
+            .then(() => {
+                return res.json(screamData)
+            })
+        } else {
+            // this scream has already been liked by this user
+            return res.status(400).json({ error: 'Scream already liked' })
+        }
+    })
+    .catch(e => {
+        console.error(e)
+        res.status(500).json({ error: e.code })
+    })
+     
+}
+
+exports.unlikeScream = (req, res) => {
+    const likeDocument = 
+    db
+    .collection('likes')
+    .where('userHandle', '==', req.user.handle)
+    .where('screamId', '==', req.params.screamId)
+    .limit(1)
+
+    const screamDocument = db.collection('screams').doc(req.params.screamId)
+
+    let screamData = {}
+
+    screamDocument.get()
+    // get the scream the user wants to like
+    .then(doc => {
+        if(doc.exists) {
+            screamData = doc.data()
+            screamData.screamId = doc.id
+
+            return likeDocument.get()
+        } else return res.status(404).json({ error: 'Scream not found' })
+    })
+    // a query snapshot
+    .then(data => {
+        if(data.empty) {
+            return res.status(400).json({ error: 'Scream not liked' })
+        } else {
+            return db
+            .doc(`/likes/${data.docs[0].id}`)
+            .delete()
+            .then(() => {
+                screamData.likeCount--
+                return screamDocument.update({ likeCount: screamData.likeCount })
+            })
+            .then(() => {
+                return res.json(screamData)
+            })
+        }
+    })
+    .catch(e => {
+        console.error(e)
+        res.status(500).json({ error: e.code })
     })
 
 }
