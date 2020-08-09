@@ -24,6 +24,7 @@ module.exports = (req, res, next) => {
             // data() will extract data from the document
             req.user.handle = data.docs[0].data().handle
             req.user.imageUrl = data.docs[0].data().imageUrl
+            req.user.id = data.docs[0].data().userId
             return next()
         })
         .catch(e => {

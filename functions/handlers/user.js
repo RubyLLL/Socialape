@@ -116,6 +116,7 @@ exports.getAuthenticatedUser = (req, res) => {
     .then(doc => {
         if(doc.exists){
             userData.credentials = doc.data()
+            // get the user's likes
             return db.collection('likes').where('userHandle', '==', req.user.handle).get()
         }
     })
@@ -123,6 +124,22 @@ exports.getAuthenticatedUser = (req, res) => {
         userData.likes = []
         data.forEach(doc => {
             userData.likes.push(doc.data())
+        })
+        // get the user's notifications
+        return db.collection('notifications').where('recipient', '==', req.user.handle).orderBy('createdAt', 'desc').limit(10).get()
+    })
+    .then(data => {
+        userData.notifications = []
+        data.forEach(doc => {
+            userData.notifications.push({
+                recipient: doc.data().recipient,
+                sender: doc.data().sender,
+                read: doc.data().read,
+                type: doc.data().type,
+                createdAt: doc.data().createdAt,
+                screamId: doc.data().screamId,
+                notificationId: doc.id
+            })
         })
         return res.json(userData)
     })
@@ -184,4 +201,49 @@ exports.uploadImage = (req, res) => {
         })
     })
     busboy.end(req.rawBody)
+}
+
+exports.getUserDetails = (req, res) => {
+    let userData = {}
+    db
+    .collection('users')
+    .doc(req.params.id)
+    .get()
+    .then(doc => {
+        if(doc.exists) {
+            userData.user = doc.data()
+            return db
+            .collection('screams')
+            .where('userId', '==', req.params.id)
+            .orderBy('createdAt', 'desc')
+            .get()  
+        } else {
+            return res.status(404).json({ error: 'User not found' })
+        }
+    })
+    .then(data => {
+        userData.screams = []
+        data.forEach(doc => {
+            userData.screams.push({
+                body: doc.data().body,
+                createdAt: doc.data().createdAt,
+                likeCount: doc.data().likeCount,
+                commentCount: doc.data().commentCount,
+                imageUrl: doc.data().imageUrl,
+                userId: doc.data().userId,
+                userHanlde: doc.data().userHanlde,
+                screamId: doc.id
+            })
+        })
+        return res.json(userData)
+    })
+    .catch(e => {
+        console.error(e)
+        return res.status(500).json({ error: e.code })
+    })
+    
+}
+
+exports.markNotificationRead = (req, res) => {
+    db.collection('notifications').doc()
 }

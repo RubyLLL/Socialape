@@ -16,9 +16,12 @@ const {
     userLogin, 
     uploadImage, 
     addUserDetails, 
-    getAuthenticatedUser 
+    getAuthenticatedUser ,
+    getUserDetails,
+    markNotificationRead
 } = require('./handlers/user')
 const FBAuth = require('./utils/fbAuth');
+const fbAuth = require('./utils/fbAuth');
 
 // srceam routes
 app.get('/screams', getAllScreams)
@@ -36,12 +39,11 @@ app.delete('/scream/:screamId', FBAuth, deleteScream)
 app.post('/signup', userSignup)
 // Log in route
 app.post('/login', userLogin)
-
 app.post('/user/image',FBAuth, uploadImage)
-
 app.post('/user', FBAuth, addUserDetails)
-
 app.get('/user', FBAuth, getAuthenticatedUser)
+app.get('/user/:id', getUserDetails)
+app.post('/notifications', fbAuth, markNotificationRead)
 
 // https://baseurl.com/api/
 exports.api = functions.https.onRequest(app)
