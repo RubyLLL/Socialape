@@ -21,7 +21,6 @@ const {
     markNotificationRead
 } = require('./handlers/user')
 const FBAuth = require('./utils/fbAuth');
-const fbAuth = require('./utils/fbAuth');
 
 // srceam routes
 app.get('/screams', getAllScreams)
@@ -43,7 +42,7 @@ app.post('/user/image',FBAuth, uploadImage)
 app.post('/user', FBAuth, addUserDetails)
 app.get('/user', FBAuth, getAuthenticatedUser)
 app.get('/user/:id', getUserDetails)
-app.post('/notifications', fbAuth, markNotificationRead)
+app.post('/notifications', FBAuth, markNotificationRead)
 
 // https://baseurl.com/api/
 exports.api = functions.https.onRequest(app)
@@ -51,9 +50,9 @@ exports.api = functions.https.onRequest(app)
 // database trigger
 exports.createNotificationOnLike = functions.firestore.document('likes/{id}')
 .onCreate((snapshot) => {
-    db.doc(`screams/${snapshot.data().screamId}`).get()
+    return db.doc(`screams/${snapshot.data().screamId}`).get()
     .then(doc => {
-        if(doc.exists) {
+        if(doc.exists && doc.data().userId !== snapshot.data().userId) {
             return db.doc(`notifications/${snapshot.id}`).add({
                 createdAt: new Date().toISOString(), 
                 recipient: doc.data().userId,
@@ -64,48 +63,78 @@ exports.createNotificationOnLike = functions.firestore.document('likes/{id}')
             })
         }
     })
-    .then(() => {
-        return
-    })
-    .catch(e => {
-        console.error(e)
-        return
-    }) 
+    .catch(e => console.error(e)) 
 })
 
 exports.deleteNotificationOnLike = functions.firestore.document('likes/{id}')
 .onDelete((snapshot) => {
-    db.doc(`/notifications/${snapshot.id}`)
+    return db.doc(`/notifications/${snapshot.id}`)
     .delete()
-    .then(() => {
-        return
-    })
-    .catch(e => {
-        console.error(e)
-        return
-    })
+    .catch(e => console.error(e))
 })
 
 exports.createNotificationOnComment = functions.firestore.document('comments/{id}')
 .onCreate((snapshot) => {
-    db.doc(`screams/${snapshot.data().screamId}`).get()
+    return db.doc(`screams/${snapshot.data().screamId}`).get()
     .then(doc => {
-        if(doc.exists) {
+        if(doc.exists && doc.data().userId !== snapshot.data().userId) {
             return db.doc(`notifications/${snapshot.id}`).add({
                 createdAt: new Date().toISOString(), 
-                recipient: doc.data().userHandle,
-                sender:snapshot.data().userHandle,
+                recipient: doc.data().userId,
+                sender:snapshot.data().userId,
                 type: 'comment',
                 read: false,
                 screamId: doc.id
             })
         }
     })
-    .then(() => {
-        return
+    .catch(e => console.error(e))
+})
+
+// when user changes the profile picture, it will change on all screen
+exports.onUserImageChange = functions.firestore.document('/users/{userId}')
+.onUpdate((change) => {
+    console.log(change.before.data())
+    console.log(change.after.data())
+
+    if(change.before.data().imageUrl !== change.after.data().imageUrl) {
+        console.log('image has changed')
+        const batch = db.batch()
+        return db.collection('screams').where('userHandle', '==', change.before.data().handle).get()
+        .then(data => {
+            data.forEach(doc => {
+                const scream = db.doc(`/screams/${doc.id}`)
+                batch.update(scream, { imageUrl: change.after.data().imageUrl })
+            })
+            return batch.commit()
+        })
+    }
+})
+
+exports.onScreamDelete = functions.firestore.document('/screams/{screamId}')
+// in context has the params.url
+.onDelete((snapshot, context) => {
+    const screamId = context.params.screamId
+    const batch = db.batch()
+    return db.collection('comments').where('screamId', '==', screamId).get()
+    .then(data => {
+        data.forEach(doc => {
+            batch.delete(db.doc(`/comments/${doc.id}`))
+        })
+        return db.collection('likes').where('screamId', '==', screamId).get()
     })
-    .catch(e => {
-        console.error(e)
-        return
+    .then(data => {
+        data.forEach(doc => {
+            batch.delete(db.doc(`/likes/${doc.id}`))
+        })
+        return db.collection('notifications').where('screamId', '==', screamId).get()
     })
+    .then(data => {
+        data.forEach(doc => {
+            batch.delete(db.doc(`/notifications/${doc.id}`))
+        })
+        return batch.commit()
+    })
+    .catch(e => console.error(e)
+    )
 })

@@ -59,7 +59,7 @@ exports.userSignup = (req, res) => {
         if(e.code === 'auth/email-already-in-use') {
             return res.status(400).json({ email: 'Email is already in use'})
         } else {
-            return res.status(500).json({ error: e.code })
+            return res.status(500).json({ general: 'Something wen wrong. Please try again.' })
         }
     })
 }
@@ -126,7 +126,6 @@ exports.getAuthenticatedUser = (req, res) => {
             userData.likes.push(doc.data())
         })
         // get the user's notifications
-        console.log(req.user)
         return db.collection('notifications').where('recipient', '==', req.user.handle).orderBy('createdAt', 'desc').limit(10).get()
     })
     .then(data => {
@@ -246,5 +245,19 @@ exports.getUserDetails = (req, res) => {
 }
 
 exports.markNotificationRead = (req, res) => {
-    db.collection('notifications').doc()
+    // send serve an array of ids of unread notif
+    // batch write -  in firebase when you need to modify multiple documents
+    let batch = db.batch()
+    req.body.forEach(notifId => {
+        const notif = db.collection('notifications').doc(notifId)
+        batch.update(notif, { read: true })
+    })
+    batch.commit()
+    .then(() => {
+        return res.json({ message: 'Notifications marked read' })
+    })
+    .catch(e => {
+        console.error(e)
+        return res.status(500).json({ error: e.code })
+    })
 }
