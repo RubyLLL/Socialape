@@ -56,8 +56,8 @@ exports.createNotificationOnLike = functions.firestore.document('likes/{id}')
         if(doc.exists) {
             return db.doc(`notifications/${snapshot.id}`).add({
                 createdAt: new Date().toISOString(), 
-                recipient: doc.data().userHandle,
-                sender:snapshot.data().userHandle,
+                recipient: doc.data().userId,
+                sender:snapshot.data().userId,
                 type: 'like',
                 read: false,
                 screamId: doc.id
