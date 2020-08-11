@@ -26,11 +26,13 @@ exports.userSignup = (req, res) => {
 
     let userToken, userID
     db
-    .doc(`/users/${newUser.handle}`).get()
-    .then(doc => {
+    .collection('users')
+    .where('userHandle', '==', newUser.handle)
+    .get()
+    .then(data => {
         // this handle is already taken
-        if(doc.exists) {
-            return res.status(400).json({ handle: 'this handle is already taken' })
+        if(data.length !== 0) {
+            return res.status(500).json({ handle: 'this handle is already taken' })
         } else {
             return firebase
             .auth()
@@ -59,7 +61,7 @@ exports.userSignup = (req, res) => {
         if(e.code === 'auth/email-already-in-use') {
             return res.status(400).json({ email: 'Email is already in use'})
         } else {
-            return res.status(500).json({ general: 'Something wen wrong. Please try again.' })
+            return res.status(500).json({ error: 'Something wen wrong. Please try again.' })
         }
     })
 }
