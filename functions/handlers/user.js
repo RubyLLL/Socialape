@@ -86,8 +86,7 @@ exports.userLogin = (req, res) => {
     })
     .catch(e => {
         console.error(e)
-        if(e.code === 'auth/wrong-password') return res.status(403).json({ general: 'Wrong credentials, pleae try again' })
-        else return res.status(500).json({ error: e.code })
+        return res.status(403).json({ general: 'Wrong credentials, pleae try again' })
     })
 }
 
