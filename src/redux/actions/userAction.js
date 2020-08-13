@@ -3,7 +3,7 @@ import {
     LOADING_UI, 
     CLEAR_ERRORS, 
     SET_USER, 
-    SET_AUTHENTICATED
+    SET_UNAUTHENTICATED
 } from '../types'
 import axios from 'axios'
 
@@ -27,11 +27,17 @@ export const loginUser = (userData, history) => (dispatch) => {
     })
 } 
 
+export const logoutUser = () => dispatch => {
+    localStorage.removeItem('FBIdToken')
+    delete axios.defaults.headers.common['Authorization']
+    dispatch({ type: SET_UNAUTHENTICATED })
+}
+
 export const getUserData = () => (dispatch) => {
     axios
       .get('/user')
       .then((res) => {
-          console.log(res)
+          console.log(`from getUserData ${res}`)
           dispatch({
             type: SET_USER,
             payload: res.data
@@ -40,8 +46,28 @@ export const getUserData = () => (dispatch) => {
       .catch((err) => console.log(err));
   }
 
-  const setAuthorizationHeader = (token) => {
+  export const signupUser = (newUserData, history) => (dispatch) => {
+      dispatch({ type: LOADING_UI })
+      axios
+      .post('/signup', newUserData)
+      .then(result => {
+        setAuthorizationHeader(result.data.userToken)
+        dispatch(getUserData())
+        dispatch({ type: CLEAR_ERRORS })
+        // ANCHOR https://reactrouter.com/web/api/history
+        // this will redirect us to the home page
+        history.push('/')
+      })
+      .catch(e => {
+        dispatch({
+            type: SET_ERRORS,
+            payload: e.response.data
+        })
+    })
+  }
+
+const setAuthorizationHeader = (token) => {
     const FBIdToken = `Bearer ${token}`;
     localStorage.setItem('FBIdToken', FBIdToken);
     axios.defaults.headers.common['Authorization'] = FBIdToken;
-  };
+}

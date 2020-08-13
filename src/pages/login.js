@@ -29,7 +29,9 @@ class login extends Component {
     }
     // NOTE so that the errors will also displayed on the page
     componentWillReceiveProps(nextProps){
-        if(nextProps.ui.errors) this.setState({ errors: nextProps.ui.errors })
+        if(nextProps.ui.errors) this.setState({ 
+            errors: nextProps.ui.errors 
+        })
     }
 
     handleSubmit = (e) => {
