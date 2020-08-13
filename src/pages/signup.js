@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
-import axios from 'axios'
 
 // Redux stuff
 import { signupUser } from '../redux/actions/userAction'
