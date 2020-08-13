@@ -22,6 +22,7 @@ module.exports = (req, res, next) => {
         })
         .then(data => {
             // data() will extract data from the document
+            console.log(data.docs[0].data())
             req.user.handle = data.docs[0].data().handle
             req.user.imageUrl = data.docs[0].data().imageUrl
             req.user.id = data.docs[0].data().userId

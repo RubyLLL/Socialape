@@ -19,6 +19,7 @@ exports.userSignup = (req, res) => {
     };
 
     // Validate the user
+    console.log(newUser.handle)
     const { valid, errors } = validateSignupData(newUser)
     if(!valid) return res.status(400).json(errors)
 
@@ -28,11 +29,12 @@ exports.userSignup = (req, res) => {
     db
     .collection('users')
     .where('userHandle', '==', newUser.handle)
+    .limit(1)
     .get()
-    .then(data => {
+    .then(doc => {
         // this handle is already taken
-        if(data.length !== 0) {
-            return res.status(500).json({ handle: 'this handle is already taken' })
+        if(doc.exists) {
+            return res.status(400).json({ handle: 'this handle is already taken' })
         } else {
             return firebase
             .auth()
@@ -109,23 +111,32 @@ exports.addUserDetails = (req, res) => {
 // Get own user details
 exports.getAuthenticatedUser = (req, res) => {
     let userData = {}
+    console.log(req.user)
 
     db
     .collection('users')
-    .doc(`${req.user.uid}`)
+    .doc(`${req.user.id}`)
     .get()
     .then(doc => {
+        console.log('is it?')
         if(doc.exists){
+            console.log('it runs')
             userData.credentials = doc.data()
             // get the user's likes
-            return db.collection('likes').where('userHandle', '==', req.user.handle).get()
+            console.log(req.user.handle)
+            return db
+            .collection("likes")
+            .where('handle', '==', req.user.handle)
+            .get()
         }
     })
-    .then(data => {
-        userData.likes = []
-        data.forEach(doc => {
-            userData.likes.push(doc.data())
-        })
+    .then((data) => {
+        if(data.length !== 0){
+            userData.likes = []
+            data.forEach(doc => {
+                userData.likes.push(doc.data())
+            })
+        }
         // get the user's notifications
         return db.collection('notifications').where('recipient', '==', req.user.handle).orderBy('createdAt', 'desc').limit(10).get()
     })
