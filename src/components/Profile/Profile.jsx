@@ -1,11 +1,15 @@
 import React, { Component, Fragment } from 'react'
 import PropTypes from 'prop-types'
-import withStyles from '@material-ui/core/styles/withStyles'
 import { Link } from 'react-router-dom'
 
+// Other Libraries
 import dayjs from 'dayjs'
 
+// Other Components
+import EditDetails from './EditDetails'
+
 // MUI Stuff
+import withStyles from '@material-ui/core/styles/withStyles'
 import Button from '@material-ui/core/Button'
 import Paper from '@material-ui/core/Paper'
 import MuiLink from '@material-ui/core/Link'
@@ -15,13 +19,14 @@ import ToolTip from '@material-ui/core/Tooltip'
 
 // Redux Stuff
 import { connect } from 'react-redux'
-import { uploadImage, logoutUser } from '../redux/actions/userAction'
+import { uploadImage, logoutUser } from '../../redux/actions/userAction'
 
 // Icons
 import LocationOn from '@material-ui/icons/LocationOn'
 import LinkIcon from '@material-ui/icons/Link'
 import CalendarToday from '@material-ui/icons/CalendarToday'
 import EditIcon from '@material-ui/icons/Edit'
+import KeyboardReturn from '@material-ui/icons/KeyboardReturn'
 
 const styles = (theme) => ({
     paper: {
@@ -82,12 +87,16 @@ class Profile extends Component {
         const fileInput = document.getElementById('imageInput')
         fileInput.click() 
     }
+
+    handleLogout = () => {
+        this.props.logoutUser()
+    }
     render() {
         // NOTE this loading is when the profile of the user is loading, which is different from the ui loading
         const { 
             classes, 
             user: { 
-                credentials: { handle, createdAt, imageUrl, bio, website, location, userId}, 
+                credentials: { handle, createdAt, imageUrl, userDetails}, 
                 authenticated,
                 loading 
             } 
@@ -112,15 +121,16 @@ class Profile extends Component {
                         @{handle}
                     </MuiLink>
                     <hr/>
-                   {bio && <Typography variant='body2'>{bio}</Typography>}
+                   {userDetails.bio && <Typography variant='body2'>{userDetails.bio}</Typography>}
                    <hr/>
-                   {location && (
+                   {userDetails.location && (
                        // NOTE <Fragment> is to wrap elements to avoid error
                        <Fragment>
-                           <LocationOn color='primary' /><span>{location}</span>
+                           <LocationOn color='primary' /><span>{userDetails.location}</span>
+                           <hr/>
                        </Fragment>
                     )}
-                    {website && (
+                    {userDetails.website && (
                         <Fragment>
                              {/* NOTE _blank is used to let the web to open in a different window */}
                             <LinkIcon color='primary'/>
@@ -132,16 +142,23 @@ class Profile extends Component {
                              NOTE noopener instructs the browser to navigate to the target resource without granting 
                              NOTE the new browsing context access to the document that opened it — by not setting the Window.opener property on the opened window 
                              HIGHLIGHT noopener is especially useful when opening untrusted links */}
-                            <a href={website} target='_blank' rel='noopener noreferrer'>
-                                {' '}{website}
+                            <a href={userDetails.website} target='_blank' rel='noopener noreferrer'>
+                                {' '}{userDetails.website}
                             </a>
                             <hr/>
                         </Fragment>
                     )}
                     <CalendarToday color='primary'/>{' '}
-                    <span>Joined {dayjs(createdAt).format('MM YYYY')}</span>
-                </div>
-            </div>
+                    <span>Joined {dayjs(createdAt).format('MM YYYY')}</ span>
+                </div> {/** profile-details */}
+                {/* NOTE <ToolTip> takes only one child */}
+                <ToolTip title='Logout' placement='top'>
+                    <IconButton onClick={this.handleLogout}>
+                        <KeyboardReturn color='primary'/>
+                    </IconButton>
+                </ToolTip>
+                <EditDetails />
+            </div> {/** classes.profile */}
         </Paper>) 
         : (
            // when the user is not authenticated

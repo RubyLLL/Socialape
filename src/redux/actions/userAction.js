@@ -28,7 +28,7 @@ export const loginUser = (userData, history) => (dispatch) => {
     })
 } 
 
-export const logoutUser = () => dispatch => {
+export const logoutUser = () => (dispatch) => {
     localStorage.removeItem('FBIdToken')
     delete axios.defaults.headers.common['Authorization']
     dispatch({ type: SET_UNAUTHENTICATED })
@@ -72,6 +72,16 @@ export const uploadImage = (formData) => (dispatch) => {
     dispatch({ type: LOADING_USER })
     axios.post('user/image', formData)
     .then(result => {
+        dispatch(getUserData())
+    })
+    .catch(e => console.log(e))
+}
+
+export const editUserDetails = (userDetails) => (dispatch) => {
+    dispatch({ type: LOADING_USER })
+    axios
+    .post('/user', userDetails)
+    .then(() => {
         dispatch(getUserData())
     })
     .catch(e => console.log(e))
