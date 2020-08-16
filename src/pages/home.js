@@ -4,7 +4,7 @@ import Grid from '@material-ui/core/Grid'
 import PropTypes from 'prop-types'
 
 // From the project
-import Scream from '../components/Scream'
+import Scream from '../components/Scream/Scream'
 import Profile from '../components/Profile/Profile'
 
 // Redux Stuff

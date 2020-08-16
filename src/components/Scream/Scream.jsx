@@ -6,11 +6,12 @@ import PropTypes from 'prop-types'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
-import MyButton from '../utils/myButton'
+import MyButton from '../../utils/myButton'
+import DeleteScream from './DeleteScream'
 
 // Redux Stuff
 import { connect } from 'react-redux'
-import { likeScream, unlikeScream } from '../redux/actions/dataAction'
+import { likeScream, unlikeScream } from '../../redux/actions/dataAction'
 
 // MUI Stuff
 import withStyles from '@material-ui/core/styles/withStyles'
@@ -27,6 +28,7 @@ import FavoriteBorder from '@material-ui/icons/FavoriteBorder'
 
 const styles = {
     card: {
+        position: 'relative',
         display: 'flex',
         marginBottom: 20
     },
@@ -61,7 +63,7 @@ export class Scream extends Component {
         const { 
             classes, 
             scream: { imageUrl, body, userHandle, createdAt, screamId, likeCount, commentCount }, 
-            user: { authenticated } 
+            user: { authenticated, credentials: { handle } } 
         } = this.props
 
         const likeButton = !authenticated ? (
@@ -83,6 +85,11 @@ export class Scream extends Component {
                 </MyButton>
             )
         )
+
+        // NOTE check if this scream belongs to this user
+        const deleteButton = authenticated && handle === userHandle ? (
+            <DeleteScream screamId={screamId} />
+        ) : null
         return (
             <Card className={classes.card}>
                 <CardMedia
@@ -94,6 +101,7 @@ export class Scream extends Component {
                     <Typography variant="h5" component={Link} to={`/users/${userHandle}`} color='primary'>
                         {userHandle}
                     </Typography>
+                    {deleteButton}
                     <Typography variant="body2" color="textSecondary">
                         {dayjs(createdAt).fromNow()}
                     </Typography>
