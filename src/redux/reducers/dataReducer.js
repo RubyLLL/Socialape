@@ -25,11 +25,10 @@ export default function(state = initialState, action) {
         case LIKE_SCREAM:
             // NOTE inside action.payload is the scream,  so we find it from the screams returned
             // NOTE  and add it to scream
-            // let index = state.screams.findIndex((scream) => scream.screamId === action.payload.screamId)
-            // state.screams[index] = action.payload
+            let index = state.screams.findIndex((scream) => scream.screamId === action.payload.screamId)
+            state.screams[index] = action.payload
             return {
-                ...state,
-                scream: action.payload
+                ...state
             }
 
         default:

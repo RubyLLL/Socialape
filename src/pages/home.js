@@ -1,6 +1,5 @@
 // rce will do this
 import React, { Component } from 'react'
-import axios from 'axios'
 import Grid from '@material-ui/core/Grid'
 import PropTypes from 'prop-types'
 
@@ -10,7 +9,7 @@ import Profile from '../components/Profile/Profile'
 
 // Redux Stuff
 import { connect } from 'react-redux'
-import { getScreams, likeScream, unlikeScream } from '../redux/actions/dataAction'
+import { getScreams } from '../redux/actions/dataAction'
 
 export class home extends Component {
 
