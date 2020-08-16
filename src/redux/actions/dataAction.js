@@ -25,6 +25,7 @@ export const likeScream = screamId => dispatch => {
     axios
     .get(`/scream/${screamId}/like`)
     .then(res => {
+        console.log(res.data)
         dispatch({
             type: LIKE_SCREAM,
             payload: res.data

@@ -40,6 +40,7 @@ const styles = {
 }
 // HIGHLIGHT functions inside a class are called method
 export class Scream extends Component {
+    
     likedScream = () => {
         if (
             this.props.user.likes && 
@@ -71,7 +72,8 @@ export class Scream extends Component {
             </MyButton>
         ) : (
             // we are authenticated
-            this.likedScream ? (
+            // likedScream should be called as a method, otherwise it does not run everytime the value changes
+            this.likedScream() ? (
                 <MyButton tip='Undo like' onClick={this.unlikeScream}>
                     <FavoriteIcon color='primary' />
                 </MyButton>

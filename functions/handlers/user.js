@@ -118,15 +118,13 @@ exports.getAuthenticatedUser = (req, res) => {
     .doc(`${req.user.id}`)
     .get()
     .then(doc => {
-        console.log('is it?')
         if(doc.exists){
-            console.log('it runs')
             userData.credentials = doc.data()
             // get the user's likes
             console.log(req.user.handle)
             return db
             .collection("likes")
-            .where('handle', '==', req.user.handle)
+            .where('userHandle', '==', req.user.handle)
             .get()
         }
     })
