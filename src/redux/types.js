@@ -7,6 +7,10 @@ export const SET_USER = 'SET_USER'
 export const LOADING_USER = 'LOADING_USER'
 
 // data reducer types
+export const SET_SCREAMS = 'SET_SCREAMS '
+export const LOADING_DATA = 'LOADING_DATA '
+export const LIKE_SCREAM = 'LIKE_SCREAM'
+export const UNLIKE_SCREAM = 'UNLIKE_SCREAM'
 
 // ui reducer types
 export const SET_ERRORS = 'SET_ERRORS'

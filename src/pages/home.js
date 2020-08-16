@@ -2,30 +2,28 @@
 import React, { Component } from 'react'
 import axios from 'axios'
 import Grid from '@material-ui/core/Grid'
+import PropTypes from 'prop-types'
 
+// From the project
 import Scream from '../components/Scream'
 import Profile from '../components/Profile/Profile'
 
+// Redux Stuff
+import { connect } from 'react-redux'
+import { getScreams, likeScream, unlikeScream } from '../redux/actions/dataAction'
+
 export class home extends Component {
-    state = {
-        screams: null
-    }
+
+    // NOTE state is delted since we will get screams from props
+
     componentDidMount() {
-        //ANCHOR the proxy is set to the base url of our firebase, check package.json
-        // as well as video 4:50:00
-        axios
-        .get('/screams')
-        .then(result => {
-            this.setState({
-                screams: result.data
-            })
-        })
-        .catch(e => console.log(e))
+        this.props.getScreams()
     }
 
     render() {
-        let recentScreamsMarkup = this.state.screams ? (
-            this.state.screams.map(scream => <Scream scream={scream} key={scream.screamId}></Scream>)
+        const { screams, loading } = this.props.data
+        let recentScreamsMarkup = !loading ? (
+            screams.map(scream => <Scream scream={scream} key={scream.screamId}></Scream>)
         ) : (
             <p>Loading...</p>
         )
@@ -42,4 +40,20 @@ export class home extends Component {
     }
 }
 
-export default home
+home.propTypes = {
+    getScreams: PropTypes.func.isRequired,
+    data: PropTypes.object.isRequired
+}
+
+const mapStateToProps = state => ({
+    data: state.data
+})
+
+const mapActionToProps = ({
+    getScreams
+})
+
+export default connect(
+    mapStateToProps, 
+    mapActionToProps
+)(home)

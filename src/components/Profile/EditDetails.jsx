@@ -21,7 +21,10 @@ import EditIcon from '@material-ui/icons/Edit'
 
 
 const styles = (theme) => ({
-    ...theme.spreadIt
+    ...theme.spreadIt,
+    button: {
+        float: 'right '
+    }
 })
 
 class EditDetails extends Component {
