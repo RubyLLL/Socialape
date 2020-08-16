@@ -72,7 +72,7 @@ export class Scream extends Component {
             </MyButton>
         ) : (
             // we are authenticated
-            // likedScream should be called as a method, otherwise it does not run everytime the value changes
+            // NOTE likedScream should be called as a method, otherwise it does not run everytime the value changes
             this.likedScream() ? (
                 <MyButton tip='Undo like' onClick={this.unlikeScream}>
                     <FavoriteIcon color='primary' />
