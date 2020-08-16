@@ -11,12 +11,12 @@ import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import Button from '@material-ui/core/Button'
 // Icons
-import AddIcon from '@material-ui/icons/Add'
 import HomeIcon from '@material-ui/icons/Home'
 import NotifButton from '@material-ui/icons/Notifications'
 
 // From the project
 import MyButton from '../utils/myButton'
+import PostScream from '../components/Scream/PostScream'
 
 class Navbar extends Component {
 
@@ -28,9 +28,7 @@ class Navbar extends Component {
                     {/* NOTE margin:auto will bring buttons to the middle */}
                     {user.authenticated ? (
                         <Fragment>
-                            <MyButton tip='Create a Scream'>
-                                <AddIcon color='primary' />
-                            </MyButton>
+                            <PostScream />
                             <Link to='/'>
                                 <MyButton tip='Home'>
                                     <HomeIcon color='primary' />
